@@ -2,13 +2,12 @@ import fetch from "node-fetch";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
-    const body = req.body;
+    const message = req.body?.message;
 
-    const chatId = body?.message?.chat?.id;
-    const text = body?.message?.text;
+    if (message?.chat?.id) {
+      const chatId = message.chat.id;
+      const text = message.text || "Hi there!";
 
-    if (chatId && text) {
-      // Reply to user
       await fetch(
         `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`,
         {
@@ -16,14 +15,14 @@ export default async function handler(req, res) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             chat_id: chatId,
-            text: `You said: ${text}`,
-          }),
+            text: `You said: ${text}`
+          })
         }
       );
     }
 
-    return res.status(200).json({ ok: true });
+    return res.status(200).send("OK");
   }
 
-  return res.status(405).json({ error: "Method Not Allowed" });
+  res.status(200).send("Bot is running");
 }
