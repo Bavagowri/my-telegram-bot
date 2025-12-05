@@ -27,7 +27,7 @@ if (newMembers && newMembers.length > 0) {
         chat_id: chatId,
         text:
           `Hello ${name} 👋\n` +
-          `Welcome to the 9IPL_Lucky Group!\n\n` +
+          `Welcome to the <b>9IPL_Lucky</b> Group!\n\n` +
           `Thank you for joining us ❤️\n` +
           `This community is built to help members stay updated, participate, and enjoy exciting opportunities.\n\n` +
           `Explore our channels, follow us on social media, and complete the mission to earn rewards!`,
