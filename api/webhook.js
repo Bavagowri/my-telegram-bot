@@ -13,23 +13,58 @@ export default async function handler(req, res) {
   const chatId = message.chat.id;
 
   // ============================================
-  // 1️⃣ WELCOME NEW JOINERS
+  // 1️⃣ WELCOME NEW JOINERS WITH BUTTONS
   // ============================================
-  const newMembers = message?.new_chat_members;
-  if (newMembers && newMembers.length > 0) {
-    for (const member of newMembers) {
-      const name = member.first_name || "Friend";
+const newMembers = message?.new_chat_members;
+if (newMembers && newMembers.length > 0) {
+  for (const member of newMembers) {
+    const name = member.first_name || "Friend";
 
-      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: `Hello ${name}! Welcome to the 9IPL_Lucky Group!\nThank you for joining and we appreciate your participation Dear!`
-        })
-      });
-    }
+    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text:
+          `Hello ${name} 👋\n` +
+          `Welcome to the 9IPL_Lucky Group!\n\n` +
+          `Thank you for joining us ❤️\n` +
+          `This community is built to help members stay updated, participate, and enjoy exciting opportunities.\n\n` +
+          `Explore our channels, follow us on social media, and complete the mission to earn rewards!`,
+        parse_mode: "HTML",
+
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "📢 9IPL_Lucky Channel",
+                url: "https://t.me/lucky_9ipl",
+              }
+            ],
+            [
+              {
+                text: "👥 9IPL_Lucky Group",
+                url: "https://t.me/+q5W1A5PZvrc1NDk9",
+              }
+            ],
+            [
+              {
+                text: "🌐 Social Media",
+                callback_data: "social_media"
+              }
+            ],
+            [
+              {
+                text: "🚀 Mission - Register Now",
+                url: "https://download.9ipl.bet/?dl=g6jmvo",
+              }
+            ]
+          ]
+        }
+      })
+    });
   }
+}
 
   // ============================================
   // 2️⃣ AUTO REPLY: If user says "hi" → reply "hello"
@@ -49,6 +84,38 @@ export default async function handler(req, res) {
       }
     );
   }
+
+
+// ============================================
+  // Handle button clicks
+// ============================================
+const callback = body?.callback_query;
+if (callback) {
+  const chatId = callback.message.chat.id;
+  const data = callback.data;
+
+  if (data === "social_media") {
+    await fetch(
+      `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "🌐 9IPL_Lucky Social Media Links:",
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "📸 Instagram", url: "https://www.instagram.com/9ipl_lucky?igsh=cGY3bWMwanc1ZHc0" }],
+              [{ text: "📘 Facebook Page", url: "https://www.facebook.com/groups/9ipllucky" }],
+              [{ text: "👥 Facebook Group", url: "https://www.facebook.com/groups/9ipllucky" }],
+              [{ text: "▶️ YouTube", url: "https://www.youtube.com/@lucky_9ipl" }]
+            ]
+          }
+        })
+      }
+    );
+  }
+}
 
   // ============================================
   // 3️⃣ DELETE LINK MESSAGES FROM NON-ADMINS
