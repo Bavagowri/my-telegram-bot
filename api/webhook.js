@@ -32,17 +32,34 @@ export default async function handler(req, res) {
   }
 
   // ============================================
-  // 2️⃣ DELETE LINK MESSAGES FROM NON-ADMINS
+  // 2️⃣ AUTO REPLY: If user says "hi" → reply "hello"
+  // ============================================
+  const text = message.text?.toLowerCase() || "";
+
+  if (text === "hi") {
+    await fetch(
+      `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "hello"
+        })
+      }
+    );
+  }
+
+  // ============================================
+  // 3️⃣ DELETE LINK MESSAGES FROM NON-ADMINS
   // ============================================
   const userId = message.from?.id;
-  const text = message.text || "";
 
-  // Detect link
   const linkRegex = /(https?:\/\/|t\.me\/|www\.)/i;
   const containsLink = linkRegex.test(text);
 
   if (containsLink) {
-    // Check admin permission
+    // Check if user is admin
     const adminRes = await fetch(
       `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/getChatMember?chat_id=${chatId}&user_id=${userId}`
     );
@@ -52,7 +69,6 @@ export default async function handler(req, res) {
       adminData?.result?.status === "administrator" ||
       adminData?.result?.status === "creator";
 
-    // Delete if NOT admin
     if (!isAdmin) {
       await fetch(
         `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/deleteMessage`,
