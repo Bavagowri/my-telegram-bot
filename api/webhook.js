@@ -5,20 +5,44 @@ export default async function handler(req, res) {
     return res.status(200).send("Bot is running");
   }
 
-  const message = req.body?.message;
+  const body = req.body;
+  const message = body?.message;
+
   if (!message) return res.status(200).send("No message");
 
   const chatId = message.chat.id;
-  const userId = message.from.id;
+
+  // ============================================
+  // 1️⃣ WELCOME NEW JOINERS
+  // ============================================
+  const newMembers = message?.new_chat_members;
+  if (newMembers && newMembers.length > 0) {
+    for (const member of newMembers) {
+      const name = member.first_name || "Friend";
+
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `Hello ${name}! Welcome to the 9IPL_Lucky Group!\nThank you for joining and we appreciate your participation Dear!`
+        })
+      });
+    }
+  }
+
+  // ============================================
+  // 2️⃣ DELETE LINK MESSAGES FROM NON-ADMINS
+  // ============================================
+  const userId = message.from?.id;
   const text = message.text || "";
 
-  // 1️⃣ Detect if message contains a link
+  // Detect link
   const linkRegex = /(https?:\/\/|t\.me\/|www\.)/i;
   const containsLink = linkRegex.test(text);
 
   if (containsLink) {
-
-    // 2️⃣ Check if the user is an admin
+    // Check admin permission
     const adminRes = await fetch(
       `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/getChatMember?chat_id=${chatId}&user_id=${userId}`
     );
@@ -28,7 +52,7 @@ export default async function handler(req, res) {
       adminData?.result?.status === "administrator" ||
       adminData?.result?.status === "creator";
 
-    // 3️⃣ If NOT admin → delete the message
+    // Delete if NOT admin
     if (!isAdmin) {
       await fetch(
         `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/deleteMessage`,
@@ -44,6 +68,5 @@ export default async function handler(req, res) {
     }
   }
 
-  // Respond OK to Telegram
   return res.status(200).send("OK");
 }
